@@ -96,7 +96,10 @@ class Progbar(object):
                 info += ' - %s: %s' % (name, value)
             else:
                 if self.mode == "instant":
-                    info += ' - %s: %.6f' % (name, value)
+                    if isinstance(value, int):
+                        info += ' - %s: %d' % (name, value)
+                    else:
+                        info += ' - %s: %.6f' % (name, value)
                 else:
                     info += ' - %s: %.6f' % (name, value[0] / max(1, value[1]))
         return info

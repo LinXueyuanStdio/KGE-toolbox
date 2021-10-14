@@ -1,7 +1,7 @@
 # 可视化
 # run the command below to open tensorbard
 #
-# tensorboard --logdir . --bind_all
+# tensorboard --logdir .
 #
 from torch.utils.tensorboard import SummaryWriter
 
@@ -30,6 +30,11 @@ def add_result(writer, result, step_num: int):
 class VisualizeSchema:
     def __init__(self, log_dir: str, comments=""):
         self.writer = get_writer(log_dir, comments)
+        print()
+        print("Tensorboard is activated on dir " + log_dir)
+        print("You can open tensorboard with:")
+        print("     tensorboard --logdir " + log_dir + " --host=your_ip --port=6006")
+        print()
 
     def add_scalar(self, name: str, value, step_num: int):
         add_scalar(self.writer, name, value, step_num)

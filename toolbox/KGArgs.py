@@ -6,7 +6,7 @@ from typing import Optional, Dict, Any, List
 import torch
 from dataclasses import dataclass, field, asdict
 
-from toolbox.Framework import is_torch_available, cached_property, torch_required
+from toolbox.utils.Framework import is_torch_available, cached_property, torch_required
 
 
 class ExplicitEnum(Enum):

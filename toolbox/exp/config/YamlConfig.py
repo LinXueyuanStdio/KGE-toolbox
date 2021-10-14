@@ -4,7 +4,7 @@ import os
 import yaml
 
 from pathlib import Path
-from toolbox.AutoML import config_tuning_space
+from toolbox.utils.AutoML import config_tuning_space
 
 
 def load_hyperparameter_yaml(config_file, hyperparams):
@@ -104,36 +104,6 @@ class Importer:
 
     def __init__(self):
         self.model_path = "pykg2vec.models"
-        self.modelMap = {"analogy": "pointwise.ANALOGY",
-                         "complex": "pointwise.Complex",
-                         "complexn3": "pointwise.ComplexN3",
-                         "conve": "projection.ConvE",
-                         "convkb": "pointwise.ConvKB",
-                         "cp": "pointwise.CP",
-                         "distmult": "pointwise.DistMult",
-                         "hole": "pairwise.HoLE",
-                         "hyper": "projection.HypER",
-                         "interacte": "projection.InteractE",
-                         "kg2e": "pairwise.KG2E",
-                         "murp": "pointwise.MuRP",
-                         "ntn": "pairwise.NTN",
-                         "octonione": "pointwise.OctonionE",
-                         "proje_pointwise": "projection.ProjE_pointwise",
-                         "quate": "pointwise.QuatE",
-                         "rescal": "pairwise.Rescal",
-                         "rotate": "pairwise.RotatE",
-                         "simple": "pointwise.SimplE",
-                         "simple_ignr": "pointwise.SimplE_ignr",
-                         "slm": "pairwise.SLM",
-                         "sme": "pairwise.SME",
-                         "sme_bl": "pairwise.SME_BL",
-                         "transd": "pairwise.TransD",
-                         "transe": "pairwise.TransE",
-                         "transh": "pairwise.TransH",
-                         "transm": "pairwise.TransM",
-                         "transr": "pairwise.TransR",
-                         "tucker": "projection.TuckER",
-                         }
         self.config_path = "pykg2vec.config"
 
     def import_model_config(self, name):
@@ -154,16 +124,4 @@ class Importer:
           ModuleNotFoundError: It raises a module not found error if the configuration or the model cannot be found.
         """
         config_obj = getattr(importlib.import_module(self.config_path), "Config")
-        model_obj = None
-        try:
-            if name in self.modelMap:
-                splited_path = self.modelMap[name].split('.')
-            else:
-                raise ValueError("%s model has not been implemented. please select from: %s" % (
-                    name, ' '.join(map(lambda x: str(x).split(".")[1], self.modelMap.values()))))
-            model_obj = getattr(importlib.import_module(self.model_path + ".%s" % splited_path[0]), splited_path[1])
-        except ModuleNotFoundError:
-            raise ValueError("%s model has not been implemented. please select from: %s" % (
-                name, ' '.join(map(str.split(".")[1], self.modelMap.values()))))
-
-        return config_obj, model_obj
+        return config_obj

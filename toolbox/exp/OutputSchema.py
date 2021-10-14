@@ -10,6 +10,7 @@ class OutputPathSchema:
         self.dir_path_log = output_path / 'log'
         self.dir_path_visualize = output_path / 'visualize'
         self.dir_path_checkpoint = output_path / 'checkpoint'
+        self.dir_path_deploy = output_path / 'deploy'
         self.dir_path_embedding = output_path / 'embedding'
 
         self.build_dir_structure()
@@ -22,6 +23,9 @@ class OutputPathSchema:
 
     def checkpoint_path(self, filename="checkpoint.tar") -> Path:
         return self.dir_path_checkpoint / filename
+
+    def deploy_path(self, filename="model.tar") -> Path:
+        return self.dir_path_deploy / filename
 
     def embedding_path(self, filename) -> Path:
         return self.dir_path_embedding / filename
@@ -43,6 +47,7 @@ class OutputPathSchema:
         self.dir_path_log.mkdir(parents=True, exist_ok=True)
         self.dir_path_visualize.mkdir(parents=True, exist_ok=True)
         self.dir_path_checkpoint.mkdir(parents=True, exist_ok=True)
+        self.dir_path_deploy.mkdir(parents=True, exist_ok=True)
         self.dir_path_embedding.mkdir(parents=True, exist_ok=True)
 
     def clean(self):
@@ -63,6 +68,8 @@ class OutputSchema:
             - valid.log
           - checkpoint
             - checkpoint_score_xx.tar
+          - deploy
+            - model_score_xx.tar
           - embedding
             - embedding_score_xx.pkl
           - config.yaml

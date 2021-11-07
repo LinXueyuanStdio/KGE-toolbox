@@ -60,7 +60,7 @@ TODO `(h,r,?)` 和 `(?,r^{-1},t)` 不一样，下面的是平均结果。
 | [DistMult](https://www.microsoft.com/en-us/research/wp-content/uploads/2016/02/ICLR2015_updated.pdf)                             | 0.343 | 0.250  | 0.378  |  0.531  |
 | [ComplEx](http://proceedings.mlr.press/v48/trouillon16.pdf)                                                                      | 0.348 | 0.253  | 0.384  |  0.536  |
 | [ConvE](https://arxiv.org/abs/1707.01476)                                                                                        | 0.339 | 0.248  | 0.369  |  0.521  |
-| [RotatE](https://openreview.net/pdf?id=HkgEQnRqYQ) [original code](https://github.com/DeepGraphLearning/KnowledgeGraphEmbedding) | 0.333 | 0.240  | 0.368  |  0.522  |
+| [RotatE](https://openreview.net/pdf?id=HkgEQnRqYQ) [code](https://github.com/DeepGraphLearning/KnowledgeGraphEmbedding) | 0.333 | 0.240  | 0.368  |  0.522  |
 
 #### WN18RR (Wordnet)
 

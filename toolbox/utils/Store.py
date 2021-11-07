@@ -104,6 +104,12 @@ class StoreSchema:
     def model_path_with_score(self, score: float):
         return self.path.deploy_path("score-" + str(score) + "-checkpoint.tar")
 
+    def save_scripts(self, filenames):
+        for filename in filenames:
+            with open(filename) as source:
+                with open(self.path.scripts_path(filename), "w") as target:
+                    target.writelines(source.readlines())
+
     def save_by_score(self,
                       model: nn.Module,
                       optim: optimizer.Optimizer,

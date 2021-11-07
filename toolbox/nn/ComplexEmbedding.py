@@ -1,11 +1,13 @@
-from typing import List
+from typing import List, Tuple
 
 import torch
 from torch import nn
 
+ComplexNum = Tuple[torch.Tensor, torch.Tensor]
+
 
 class ComplexEmbedding(nn.Module):
-    def __init__(self, num_entities, embedding_dim, num_channels):
+    def __init__(self, num_entities, embedding_dim, num_channels=2):
         super(ComplexEmbedding, self).__init__()
         self.num_entities = num_entities
         self.embedding_dim = embedding_dim
@@ -75,7 +77,7 @@ class ComplexDropout(nn.Module):
 
 
 class ComplexBatchNorm1d(nn.Module):
-    def __init__(self, embedding_dim, num_channels):
+    def __init__(self, embedding_dim, num_channels=2):
         super(ComplexBatchNorm1d, self).__init__()
         self.embedding_dim = embedding_dim
         self.num_channels = num_channels
@@ -135,6 +137,45 @@ class ComplexAdd(nn.Module):
 
         t_a = h_a + r_a
         t_b = h_b + r_b
+        return t_a, t_b
+
+
+class ComplexConjugate(nn.Module):
+    """
+    h = h_a + h_b i
+    ^h = h_a - h_b i
+
+    h in C^d
+    r in C^d
+    """
+
+    def __init__(self):
+        super(ComplexConjugate, self).__init__()
+
+    def forward(self, h):
+        h_a, h_b = h
+        return h_a, -h_b
+
+
+class ComplexSubstract(nn.Module):
+    """
+    h = h_a + h_b i
+    r = r_a + r_b i
+    h - r = (h_a - r_a) + (h_b - r_b) i
+
+    h in C^d
+    r in C^d
+    """
+
+    def __init__(self):
+        super(ComplexSubstract, self).__init__()
+
+    def forward(self, h, r):
+        h_a, h_b = h
+        r_a, r_b = r
+
+        t_a = h_a - r_a
+        t_b = h_b - r_b
         return t_a, t_b
 
 

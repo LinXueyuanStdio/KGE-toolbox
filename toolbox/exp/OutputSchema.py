@@ -12,6 +12,7 @@ class OutputPathSchema:
         self.dir_path_checkpoint = output_path / 'checkpoint'
         self.dir_path_deploy = output_path / 'deploy'
         self.dir_path_embedding = output_path / 'embedding'
+        self.dir_path_scripts = output_path / 'scripts'
 
         self.build_dir_structure()
 
@@ -26,6 +27,9 @@ class OutputPathSchema:
 
     def deploy_path(self, filename="model.tar") -> Path:
         return self.dir_path_deploy / filename
+
+    def scripts_path(self, filename) -> Path:
+        return self.dir_path_scripts / filename
 
     def embedding_path(self, filename) -> Path:
         return self.dir_path_embedding / filename
@@ -49,6 +53,7 @@ class OutputPathSchema:
         self.dir_path_checkpoint.mkdir(parents=True, exist_ok=True)
         self.dir_path_deploy.mkdir(parents=True, exist_ok=True)
         self.dir_path_embedding.mkdir(parents=True, exist_ok=True)
+        self.dir_path_scripts.mkdir(parents=True, exist_ok=True)
 
     def clean(self):
         # clean the dir, and recreate dir structure

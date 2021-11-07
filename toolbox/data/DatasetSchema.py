@@ -24,14 +24,13 @@
 #    - get_dataset(dataset_name: str, custom_dataset_path=None)
 # 3. custom dataset
 
+import os
 import shutil
 import tarfile
-import pickle
-import os
-import zipfile
 import urllib.request
+import zipfile
 from pathlib import Path
-from typing import Dict
+from typing import Dict, Union
 
 from toolbox.utils.Log import Log
 
@@ -165,12 +164,12 @@ class RelationalTriplet:
 
 
 class BaseDatasetSchema:
-    def __init__(self, name: str, home: str = "data"):
+    def __init__(self, name: str, home: Union[Path, str] = "data"):
         self.name = name
         self.root_path = self.get_dataset_home_path(home)  # ./data/${name}
 
-    def get_dataset_home_path(self, home="data") -> Path:
-        data_home_path: Path = Path('.') / home
+    def get_dataset_home_path(self, home: Union[Path, str] = "data") -> Path:
+        data_home_path: Path = Path(home)
         data_home_path.mkdir(parents=True, exist_ok=True)
         data_home_path = data_home_path.resolve()
         return data_home_path / self.name
@@ -213,7 +212,7 @@ class RelationalTripletDatasetSchema(BaseDatasetSchema):
 
     """
 
-    def __init__(self, name: str, home: str = "data"):
+    def __init__(self, name: str, home: Union[Path, str] = "data"):
         BaseDatasetSchema.__init__(self, name, home)
         self.dataset_path = self.get_dataset_path()
         self.cache_path = self.get_dataset_path_child("cache")
@@ -250,7 +249,7 @@ class FreebaseFB15k(RelationalTripletDatasetSchema):
 
     """
 
-    def __init__(self, home: str = "data"):
+    def __init__(self, home: Union[Path, str] = "data"):
         super(FreebaseFB15k, self).__init__("FB15k", home)
         url = "https://everest.hds.utc.fr/lib/exe/fetch.php?media=en:fb15k.tgz"
         self.try_to_fetch_remote(url)
@@ -267,7 +266,7 @@ class DeepLearning50a(RelationalTripletDatasetSchema):
 
     """
 
-    def __init__(self, home: str = "data"):
+    def __init__(self, home: Union[Path, str] = "data"):
         super(DeepLearning50a, self).__init__("dL50a", home)
         url = "https://github.com/louisccc/KGppler/raw/master/datasets/dL50a.tgz"
         self.try_to_fetch_remote(url)
@@ -284,7 +283,7 @@ class WordNet18(RelationalTripletDatasetSchema):
 
     """
 
-    def __init__(self, home: str = "data"):
+    def __init__(self, home: Union[Path, str] = "data"):
         super(WordNet18, self).__init__("WN18", home)
         url = "https://everest.hds.utc.fr/lib/exe/fetch.php?media=en:wordnet-mlj12.tar.gz"
         self.try_to_fetch_remote(url)
@@ -304,7 +303,7 @@ class WordNet18_RR(RelationalTripletDatasetSchema):
 
     """
 
-    def __init__(self, home: str = "data"):
+    def __init__(self, home: Union[Path, str] = "data"):
         super(WordNet18_RR, self).__init__("WN18RR", home)
         url = "https://github.com/louisccc/KGppler/raw/master/datasets/WN18RR.tar.gz"
         self.try_to_fetch_remote(url)
@@ -324,7 +323,7 @@ class YAGO3_10(RelationalTripletDatasetSchema):
 
     """
 
-    def __init__(self, home: str = "data"):
+    def __init__(self, home: Union[Path, str] = "data"):
         super(YAGO3_10, self).__init__("YAGO3_10", home)
         url = "https://github.com/louisccc/KGppler/raw/master/datasets/YAGO3-10.tar.gz"
         self.try_to_fetch_remote(url)
@@ -344,7 +343,7 @@ class FreebaseFB15k_237(RelationalTripletDatasetSchema):
 
     """
 
-    def __init__(self, home: str = "data"):
+    def __init__(self, home: Union[Path, str] = "data"):
         super(FreebaseFB15k_237, self).__init__("FB15K_237", home)
         url = "https://github.com/louisccc/KGppler/raw/master/datasets/fb15k-237.tgz"
         self.try_to_fetch_remote(url)
@@ -364,7 +363,7 @@ class Kinship(RelationalTripletDatasetSchema):
 
     """
 
-    def __init__(self, home: str = "data"):
+    def __init__(self, home: Union[Path, str] = "data"):
         super(Kinship, self).__init__("Kinship", home)
         url = "https://github.com/louisccc/KGppler/raw/master/datasets/kinship.tar.gz"
         self.try_to_fetch_remote(url)
@@ -384,7 +383,7 @@ class Nations(RelationalTripletDatasetSchema):
 
     """
 
-    def __init__(self, home: str = "data"):
+    def __init__(self, home: Union[Path, str] = "data"):
         super(Nations, self).__init__("Nations", home)
         url = "https://github.com/louisccc/KGppler/raw/master/datasets/nations.tar.gz"
         self.try_to_fetch_remote(url)
@@ -403,7 +402,7 @@ class UMLS(RelationalTripletDatasetSchema):
         the knowledge graph dataset.
     """
 
-    def __init__(self, home: str = "data"):
+    def __init__(self, home: Union[Path, str] = "data"):
         super(UMLS, self).__init__("UMLS", home)
         url = "https://github.com/louisccc/KGppler/raw/master/datasets/umls.tar.gz"
         self.try_to_fetch_remote(url)
@@ -423,7 +422,7 @@ class NELL_995(RelationalTripletDatasetSchema):
 
     """
 
-    def __init__(self, home: str = "data"):
+    def __init__(self, home: Union[Path, str] = "data"):
         super(NELL_995, self).__init__("NELL_995", home)
         url = "https://github.com/louisccc/KGppler/raw/master/datasets/NELL_995.zip"
         self.try_to_fetch_remote(url)
@@ -466,7 +465,7 @@ def get_dataset(dataset_name: str):
 
 class DBP15k(RelationalTripletDatasetSchema):
 
-    def __init__(self, name="fr_en", home: str = "data"):
+    def __init__(self, name="fr_en", home: Union[Path, str] = "data"):
         """
         :param name: choice "fr_en", "ja_en", "zh_en"
         """
@@ -493,7 +492,7 @@ class DBP15k(RelationalTripletDatasetSchema):
 
 
 class DBP100k(RelationalTripletDatasetSchema):
-    def __init__(self, name="fr_en", home: str = "data"):
+    def __init__(self, name="fr_en", home: Union[Path, str] = "data"):
         """
         :param name: choice "fr_en", "ja_en", "zh_en"
         """
@@ -520,7 +519,7 @@ class DBP100k(RelationalTripletDatasetSchema):
 
 
 class SimplifiedDBP15k(RelationalTripletDatasetSchema):
-    def __init__(self, name="fr_en", home: str = "data"):
+    def __init__(self, name="fr_en", home: Union[Path, str] = "data"):
         """
         :param name: choice "fr_en", "ja_en", "zh_en"
         """

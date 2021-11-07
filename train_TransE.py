@@ -98,6 +98,7 @@ class MyExperiment(Experiment):
 
             progbar.update(step + 1, [("step", step + 1), ("loss", torch.mean(torch.Tensor(losses)).item()), ("lr", torch.mean(torch.Tensor(scheduler.get_last_lr())).item())])
             if (step + 1) % every_valid_step == 0:
+                print("")
                 model.eval()
                 with torch.no_grad():
                     self.debug("Validation (step: %d):" % (step + 1))
@@ -114,6 +115,7 @@ class MyExperiment(Experiment):
                         self.fail("current score=%.4f < best score=%.4f" % (score, best_score))
                 print("")
             if (step + 1) % every_test_step == 0:
+                print("")
                 model.eval()
                 with torch.no_grad():
                     self.debug("Test (step: %d):" % (step + 1))

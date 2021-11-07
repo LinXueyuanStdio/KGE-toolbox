@@ -1,7 +1,13 @@
+<h1 align="center">知识图谱工具箱</h1>
 
-# KGE-toolbox
+*<p align="center">简单快速、强力辅助.</p>*
 
-知识图谱工具箱
+<br/>
+<p align="center">
+  <a href="https://github.com/LinXueyuanStdio/KGE-toolbox"><img src="https://img.shields.io/badge/license-Apache2.0-blue.svg?label=License&style=flat" /></a>
+  <a href="https://github.com/LinXueyuanStdio/KGE-toolbox"><img src="https://img.shields.io/badge/PRs-welcome-brightgreen.svg?style=flat" /></a>
+</p>
+<br/>
 
 设计哲学
 

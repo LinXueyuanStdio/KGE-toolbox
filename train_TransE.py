@@ -1,5 +1,8 @@
+from pathlib import Path
+
 import click
 import numpy as np
+import torch
 from torch.utils.data import DataLoader
 
 from toolbox.data.DataSchema import RelationalTripletData, RelationalTripletDatasetCachePath
@@ -11,12 +14,10 @@ from toolbox.evaluate.Evaluate import get_score
 from toolbox.evaluate.LinkPredict import batch_link_predict2, as_result_dict
 from toolbox.exp.Experiment import Experiment
 from toolbox.exp.OutputSchema import OutputSchema
-from toolbox.nn.ConvE import *
-from toolbox.nn.TransE import *
+from toolbox.nn.TransE import TransE
+from toolbox.optim.lr_scheduler import get_scheduler
 from toolbox.utils.Progbar import Progbar
 from toolbox.utils.RandomSeeds import set_seeds
-
-set_seeds()
 
 
 class MyExperiment(Experiment):
@@ -33,6 +34,7 @@ class MyExperiment(Experiment):
         data.load_cache(["train_triples_ids", "test_triples_ids", "valid_triples_ids", "all_triples_ids"])
         data.load_cache(["hr_t_train"])
         data.print(self.log)
+        self.store.save_scripts(["train.py", "model.py", "QubitEmbedding.py"])
         max_relation_id = data.relation_count
 
         # 1. build train dataset
@@ -49,8 +51,9 @@ class MyExperiment(Experiment):
         test_dataloader = DataLoader(test_data, batch_size=test_batch_size, shuffle=False, num_workers=8, pin_memory=True)
 
         # 3. build model
-        model = ReverseTransE(data.entity_count, data.relation_count, edim).to(train_device)
+        model = TransE(data.entity_count, 2 * data.relation_count, edim).to(train_device)
         opt = torch.optim.Adam(model.parameters(), lr=lr, weight_decay=weight_decay, amsgrad=amsgrad)
+        scheduler = get_scheduler(opt, lr_policy="step")
         best_score = 0
         if resume:
             if resume_by_score > 0:
@@ -71,9 +74,11 @@ class MyExperiment(Experiment):
             self.dump_model(model)
 
         # 4. training
+        self.debug("training")
         progbar = Progbar(max_step=max_steps)
         for step in range(start_step, max_steps):
             model.train()
+            losses = []
             for h, r, targets in train_dataloader:
                 opt.zero_grad()
 
@@ -86,14 +91,15 @@ class MyExperiment(Experiment):
                 predictions = model(h, r)
                 loss = model.loss(predictions, targets)
                 # loss = loss + model.regular_loss(h, r)
+                losses.append(loss.item())
                 loss.backward()
                 opt.step()
+            scheduler.step()
 
-            progbar.update(step + 1, [("step", step + 1), ("loss", loss.item())])
+            progbar.update(step + 1, [("step", step + 1), ("loss", torch.mean(torch.Tensor(losses)).item()), ("lr", torch.mean(torch.Tensor(scheduler.get_last_lr())).item())])
             if (step + 1) % every_valid_step == 0:
                 model.eval()
                 with torch.no_grad():
-                    print("")
                     self.debug("Validation (step: %d):" % (step + 1))
                     result = self.evaluate(model, valid_data, valid_dataloader, test_batch_size, max_relation_id, test_device)
                     self.visual_result(step + 1, result, "Valid-")
@@ -106,13 +112,14 @@ class MyExperiment(Experiment):
                         self.store.save_best(model, opt, step, 0, score)
                     else:
                         self.fail("current score=%.4f < best score=%.4f" % (score, best_score))
+                print("")
             if (step + 1) % every_test_step == 0:
                 model.eval()
                 with torch.no_grad():
-                    print("")
                     self.debug("Test (step: %d):" % (step + 1))
                     result = self.evaluate(model, test_data, test_dataloader, test_batch_size, max_relation_id, test_device)
                     self.visual_result(step + 1, result, "Test-")
+                print("")
 
     def evaluate(self, model, test_data, test_dataloader, test_batch_size, max_relation_id: int, device="cuda:0"):
         data = iter(test_dataloader)
@@ -127,6 +134,8 @@ class MyExperiment(Experiment):
             mask_for_tReverser = mask_for_tReverser.to(device)
             pred1 = model(h, r)
             pred2 = model(t, reverse_r)
+            pred1 = pred1[0] + pred1[1]
+            pred2 = pred2[0] + pred2[1]
             return t, h, pred1, pred2, mask_for_hr, mask_for_tReverser
 
         progbar = Progbar(max_step=len(test_data) // (test_batch_size * 10))
@@ -169,7 +178,7 @@ class MyExperiment(Experiment):
 
 @click.command()
 @click.option("--dataset", type=str, default="FB15k-237", help="Which dataset to use: FB15k, FB15k-237, WN18 or WN18RR.")
-@click.option("--name", type=str, default="Echo", help="Name of the experiment.")
+@click.option("--name", type=str, default="TransE", help="Name of the experiment.")
 @click.option("--start_step", type=int, default=0, help="start step.")
 @click.option("--max_steps", type=int, default=1000, help="Number of steps.")
 @click.option("--every_test_step", type=int, default=10, help="Number of steps.")
@@ -199,9 +208,10 @@ def main(dataset, name,
          lr, amsgrad, lr_decay, weight_decay,
          edim, rdim, input_dropout, hidden_dropout1, hidden_dropout2,
          ):
+    set_seeds()
     output = OutputSchema(dataset + "-" + name)
 
-    dataset = FreebaseFB15k_237()
+    dataset = FreebaseFB15k_237(Path.home() / "data")
     cache = RelationalTripletDatasetCachePath(dataset.cache_path)
     data = RelationalTripletData(dataset=dataset, cache_path=cache)
     data.preprocess_data_if_needed()

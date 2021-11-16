@@ -14,7 +14,7 @@ from toolbox.evaluate.Evaluate import get_score
 from toolbox.evaluate.LinkPredict import batch_link_predict2, as_result_dict2
 from toolbox.exp.Experiment import Experiment
 from toolbox.exp.OutputSchema import OutputSchema
-from toolbox.nn.TransE import TransE
+from toolbox.nn.RotatE import RotateMult2
 from toolbox.optim.lr_scheduler import get_scheduler
 from toolbox.utils.Progbar import Progbar
 from toolbox.utils.RandomSeeds import set_seeds
@@ -51,7 +51,7 @@ class MyExperiment(Experiment):
         test_dataloader = DataLoader(test_data, batch_size=test_batch_size, shuffle=False, num_workers=8, pin_memory=True)
 
         # 3. build model
-        model = TransE(data.entity_count, 2 * data.relation_count, edim).to(train_device)
+        model = RotateMult2(data.entity_count, 2 * data.relation_count, edim).to(train_device)
         opt = torch.optim.Adam(model.parameters(), lr=lr, weight_decay=weight_decay, amsgrad=amsgrad)
         scheduler = get_scheduler(opt, lr_policy="step")
         best_score = 0
@@ -180,7 +180,7 @@ class MyExperiment(Experiment):
 
 @click.command()
 @click.option("--dataset", type=str, default="FB15k-237", help="Which dataset to use: FB15k, FB15k-237, WN18 or WN18RR.")
-@click.option("--name", type=str, default="TransE", help="Name of the experiment.")
+@click.option("--name", type=str, default="RotatE", help="Name of the experiment.")
 @click.option("--start_step", type=int, default=0, help="start step.")
 @click.option("--max_steps", type=int, default=1000, help="Number of steps.")
 @click.option("--every_test_step", type=int, default=10, help="Number of steps.")

@@ -1,5 +1,9 @@
-# 日志
-
+"""
+@author: lxy
+@email: linxy59@mail2.sysu.edu.cn
+@date: 2022/2/19
+@description: 日志
+"""
 import logging
 
 # logging.basicConfig(format='%(message)s', level=logging.INFO)
@@ -58,7 +62,7 @@ class ColorFormatter(logging.Formatter):
         return formatter.format(record)
 
 
-def Log(filename: str, name_scope="0"):
+def Log(filename: str, name_scope="0", write_to_console=True):
     """Return instance of logger 统一的日志样式
 
         Examples:
@@ -78,10 +82,11 @@ def Log(filename: str, name_scope="0"):
     file_handler.setFormatter(logging.Formatter('[%(asctime)s] p%(process)s (%(filename)s:%(lineno)d) - %(message)s', '%m-%d %H:%M:%S'))
     logger.addHandler(file_handler)
 
-    console_handler = logging.StreamHandler()
-    console_handler.setLevel(logging.DEBUG)
-    console_handler.setFormatter(ColorFormatter())
-    logger.addHandler(console_handler)
+    if write_to_console:
+        console_handler = logging.StreamHandler()
+        console_handler.setLevel(logging.DEBUG)
+        console_handler.setFormatter(ColorFormatter())
+        logger.addHandler(console_handler)
 
     return logger
 

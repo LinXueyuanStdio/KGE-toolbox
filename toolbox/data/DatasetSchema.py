@@ -25,13 +25,12 @@
 # 3. custom dataset
 
 import os
-import shutil
 import tarfile
-import urllib.request
 import zipfile
 from pathlib import Path
 from typing import Dict, Union
 
+from toolbox.utils.Download import DownloadManager
 from toolbox.utils.Log import Log
 
 
@@ -71,6 +70,7 @@ def extract_zip(zip_path, extract_path='.'):
 
 
 # region 2. remote dataset
+downloader = None
 class RemoteDataset:
     def __init__(self, name: str, url: str, root_path: Path):
         root_path.mkdir(parents=True, exist_ok=True)
@@ -86,16 +86,18 @@ class RemoteDataset:
         """ Downloads the given dataset from url"""
         self._logger.info("Downloading the dataset %s" % self.name)
 
+        global downloader
+        if downloader is None:
+            downloader = DownloadManager()
+
         if self.url.endswith('.tar.gz') or self.url.endswith('.tgz'):
             if self.tar.exists():
                 return
-            with urllib.request.urlopen(self.url) as response, open(str(self.tar), 'wb') as out_file:
-                shutil.copyfileobj(response, out_file)
+            downloader.download_to_path([self.url], str(self.tar))
         elif self.url.endswith('.zip'):
             if self.zip.exists():
                 return
-            with urllib.request.urlopen(self.url) as response, open(str(self.zip), 'wb') as out_file:
-                shutil.copyfileobj(response, out_file)
+            downloader.download_to_path([self.url], str(self.zip))
         else:
             raise NotImplementedError("Unknown compression format")
 
@@ -187,6 +189,9 @@ class BaseDatasetSchema:
         _logger = Log(str(log_path), name_scope="DatasetSchema")
         for key, value in self.__dict__.items():
             _logger.info("%s %s" % (key, value))
+
+    def __repr__(self):
+        return f"{self.__class__.__name__}({self.root_path})"
 
 
 class RelationalTripletDatasetSchema(BaseDatasetSchema):
@@ -434,31 +439,31 @@ class NELL_995(RelationalTripletDatasetSchema):
         return self.root_path
 
 
-def get_dataset(dataset_name: str):
-    if dataset_name.lower() == 'freebase15k' or dataset_name.lower() == 'fb15k':
-        return FreebaseFB15k()
-    elif dataset_name.lower() == 'deeplearning50a' or dataset_name.lower() == 'dl50a':
-        return DeepLearning50a()
-    elif dataset_name.lower() == 'wordnet18' or dataset_name.lower() == 'wn18':
-        return WordNet18()
-    elif dataset_name.lower() == 'wordnet18_rr' or dataset_name.lower() == 'wn18_rr':
-        return WordNet18_RR()
-    elif dataset_name.lower() == 'yago3_10' or dataset_name.lower() == 'yago':
-        return YAGO3_10()
-    elif dataset_name.lower() == 'freebase15k_237' or dataset_name.lower() == 'fb15k_237':
-        return FreebaseFB15k_237()
-    elif dataset_name.lower() == 'kinship' or dataset_name.lower() == 'ks':
-        return Kinship()
-    elif dataset_name.lower() == 'nations':
-        return Nations()
-    elif dataset_name.lower() == 'umls':
-        return UMLS()
-    elif dataset_name.lower() == 'nell_995':
-        return NELL_995()
-    elif dataset_name.lower() == 'dbp15k':
-        return DBP15k()
-    elif dataset_name.lower() == 'dbp100k':
-        return DBP100k()
+def get_dataset(dataset_name: str, home: Union[Path, str] = "data"):
+    if dataset_name.lower() in ['freebase15k', 'fb15k']:
+        return FreebaseFB15k(home=home)
+    elif dataset_name.lower() in ['deeplearning50a', 'dl50a']:
+        return DeepLearning50a(home=home)
+    elif dataset_name.lower() in ['wordnet18', 'wn18']:
+        return WordNet18(home=home)
+    elif dataset_name.lower() in ['wordnet18_rr', 'wn18_rr', 'wn18rr', 'wn18-rr']:
+        return WordNet18_RR(home=home)
+    elif dataset_name.lower() in ['yago3_10', 'yago3-10', 'yago3', 'yago']:
+        return YAGO3_10(home=home)
+    elif dataset_name.lower() in ['freebase15k_237', 'fb15k_237', 'fb15k-237', 'fb15k237']:
+        return FreebaseFB15k_237(home=home)
+    elif dataset_name.lower() in ['kinship', 'ks']:
+        return Kinship(home=home)
+    elif dataset_name.lower() in ['nations']:
+        return Nations(home=home)
+    elif dataset_name.lower() in ['umls']:
+        return UMLS(home=home)
+    elif dataset_name.lower() in ['nell_995']:
+        return NELL_995(home=home)
+    elif dataset_name.lower() in ['dbp15k']:
+        return DBP15k(home=home)
+    elif dataset_name.lower() in ['dbp100k']:
+        return DBP100k(home=home)
     else:
         raise ValueError("Unknown dataset: %s" % dataset_name)
 

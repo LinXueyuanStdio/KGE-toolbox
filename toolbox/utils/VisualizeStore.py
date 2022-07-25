@@ -8,6 +8,8 @@ run the command below to open tensorbard
 tensorboard --logdir .
 ```
 """
+
+
 def get_writer(log_dir: str, comments=""):
     from torch.utils.tensorboard import SummaryWriter
     return SummaryWriter(log_dir, comments)
@@ -30,7 +32,7 @@ def add_result(writer, result, step_num: int):
     add_scalar(writer, "using time (s)", using_time, step_num)
 
 
-class VisualizeSchema:
+class VisualizeStoreSchema:
     def __init__(self, log_dir: str, comments=""):
         self.writer = get_writer(log_dir, comments)
         print()
@@ -57,3 +59,8 @@ class VisualizeSchema:
 
     def add_result(self, result, step_num: int):
         add_result(self.writer, result, step_num)
+
+    def add_link_prediction_result(self, result, step_num: int, scope: str):
+        for key in result:
+            for i in result[key]:
+                self.add_scalar(f"{scope}_{key}_{i}", result[key][i], step_num)

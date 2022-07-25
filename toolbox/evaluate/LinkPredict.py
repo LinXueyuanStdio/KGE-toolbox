@@ -1,6 +1,8 @@
-from typing import Union, Dict
+from collections import defaultdict
+from typing import Union, Dict, List
 
 import numpy as np
+import pandas as pd
 import torch
 
 
@@ -225,12 +227,67 @@ def as_result_dict2(metrics):
     return result
 
 
+key2short = {
+    "average": "avg",
+    "left2right": "l2r",
+    "right2left": "r2l",
+    "Hits@1": "H@1",
+    "Hits@3": "H@3",
+    "Hits@10": "H@10",
+    "MeanRank": "MR",
+    "MeanReciprocalRank": "MRR",
+}
+
+
 def get_score(result: Dict[str, Union[dict, float]]):
     score = result["average"]["MeanReciprocalRank"]
     return score
 
 
-def pretty_print(result, printer=print):
+def dataframe_from_result2(result: Dict[str, Union[dict, float]]) -> pd.DataFrame:
+    df = pd.DataFrame()
+    for key, value in result.items():
+        df[key] = list(value.values())
+    df.index = ["Hits@1", "Hits@3", "Hits@10", "MR", "MRR"]
+    return df
+
+
+def to_str(data):
+    if isinstance(data, float):
+        if data < 1:
+            return "{0:>6.2%}  ".format(data)
+        else:
+            return "{0:>6.2f}  ".format(data)
+    elif isinstance(data, int):
+        return "{0:^6d}  ".format(data)
+    else:
+        return "{0:^6s}  ".format(data[:6])
+
+
+def print_dataframe(df: pd.DataFrame, printer=print):
+    for i in range(df.shape[0]):
+        printer(df.iloc[i])
+
+
+def pretty_print2(scope: str, result: Dict[str, Union[dict, float]], printer=print) -> Dict[str, List[Union[str, float]]]:
+    header = "{0:<8s}".format(scope)
+    row_results = defaultdict(list)
+    for col in result:
+        row_results[header].append(key2short[col] if col in key2short else col)
+        col_data = result[col]
+        for row in col_data:
+            cell = col_data[row]
+            key_row = key2short[row] if row in key2short else row
+            row_results[key_row].append(cell)
+
+    for i in row_results:
+        row = row_results[i]
+        printer("{0:<8s}".format(i)[:8] + ": " + "".join([to_str(data) for data in row]))
+
+    return row_results
+
+
+def pretty_print(result: Dict[str, Union[dict, float]], printer=print):
     average = result["average"]
     left2right = result["left2right"]
     right2left = result["right2left"]

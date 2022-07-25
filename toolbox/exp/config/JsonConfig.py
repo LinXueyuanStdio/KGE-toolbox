@@ -1,4 +1,5 @@
 import json
+from shutil import copyfile
 from typing import Any, Dict
 
 
@@ -47,7 +48,7 @@ class Config(object):
 
         self.__dict__.update(config)
 
-    def save_as_json(self, dir_name:str):
+    def save_as_json(self, dir_name: str, filename: str):
         if type(self.source) is list:
             for s in self.source:
                 c = Config(s)
@@ -55,9 +56,9 @@ class Config(object):
         elif type(self.source) is dict:
             json.dumps(self.source, indent=4)
         else:
-            copyfile(self.source, dir_name + self.export_name)
+            copyfile(self.source, dir_name + filename)
 
-    def show(self, fun = print):
+    def show(self, fun=print):
         if type(self.source) is list:
             for s in self.source:
                 c = Config(s)

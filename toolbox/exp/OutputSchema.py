@@ -84,7 +84,7 @@ class OutputSchema:
 
         Examples:
             >>> from toolbox.exp.OutputSchema import OutputSchema
-            >>> output = OutputSchema("dL50a_TransE")
+            >>> output = OutputSchema("output_name")
             >>> output.dump()
 
     """
@@ -113,6 +113,9 @@ class OutputSchema:
         """ Displays all the metadata of the knowledge graph"""
         for key, value in self.__dict__.items():
             self.logger.info("%s %s" % (key, value))
+
+    def __repr__(self):
+        return f"{self.__class__.__name__}({self.home_path})"
 
 
 class Cleaner:

@@ -6,6 +6,15 @@ from typing import Tuple, List, Union, Set, Dict
 import torch
 
 
+def cacheable_build(path: Union[str, Path], build_func):
+    if path.exists():
+        data = read_cache(path)
+    else:
+        data = build_func()
+        cache_data(data, path)
+    return data
+
+
 def cache_data(data, cache_path: Union[str, Path]):
     with open(str(cache_path), 'wb') as f:
         pickle.dump(data, f)

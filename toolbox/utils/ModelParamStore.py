@@ -4,9 +4,10 @@
 @date: 2022/2/19
 @description: 模型保存和恢复
 """
-from typing import Tuple
+from typing import Tuple, List, Union, Optional
 
 import torch
+from pathlib import Path
 from torch import nn
 from torch.optim import optimizer
 
@@ -22,7 +23,7 @@ _BEST_SCORE = "best_score"
 _LOSS = "loss"
 
 
-def load_model(model: nn.Module, checkpoint_path="./result/fr_en/model.tar") -> float:
+def load_model(model: nn.Module, checkpoint_path="./output/temp/model.tar") -> float:
     checkpoint = torch.load(checkpoint_path)
     model.load_state_dict(checkpoint[_MODEL_STATE_DICT])
     best_score = checkpoint[_BEST_SCORE]
@@ -39,8 +40,8 @@ def save_model(model: nn.Module,
 
 
 def load_checkpoint(model: nn.Module,
-                    optim: optimizer.Optimizer,
-                    checkpoint_path="./result/fr_en/checkpoint.tar") -> Tuple[int, int, float]:
+                    optim: Optional[optimizer.Optimizer],
+                    checkpoint_path="./output/temp/checkpoint.tar") -> Tuple[int, int, float]:
     """Loads training checkpoint.
 
     :param checkpoint_path: path to checkpoint
@@ -50,7 +51,8 @@ def load_checkpoint(model: nn.Module,
     """
     checkpoint = torch.load(checkpoint_path)
     model.load_state_dict(checkpoint[_MODEL_STATE_DICT])
-    optim.load_state_dict(checkpoint[_OPTIMIZER_STATE_DICT])
+    if optim is not None:
+        optim.load_state_dict(checkpoint[_OPTIMIZER_STATE_DICT])
     start_epoch_id = checkpoint[_EPOCH] + 1
     step = checkpoint[_STEP] + 1
     best_score = checkpoint[_BEST_SCORE]
@@ -62,7 +64,7 @@ def save_checkpoint(model: nn.Module,
                     epoch_id: int,
                     step: int,
                     best_score: float,
-                    save_path="./result/fr_en/checkpoint.tar"):
+                    save_path="./output/temp/checkpoint.tar"):
     torch.save({
         _MODEL_STATE_DICT: model.state_dict(),
         _OPTIMIZER_STATE_DICT: optim.state_dict(),
@@ -72,7 +74,7 @@ def save_checkpoint(model: nn.Module,
     }, save_path)
 
 
-def save_entity_embedding_list(entity_embedding, embedding_path="./result/fr_en/ATentsembed.txt"):
+def save_entity_embedding_list(entity_embedding, embedding_path="./output/temp/entity_embedding.txt"):
     with open(embedding_path, 'w') as f:
         d = entity_embedding.data.detach().cpu().numpy()
         for i in range(len(d)):
@@ -104,7 +106,7 @@ class ModelParamStoreSchema:
 
     def load_best(self,
                   model: nn.Module,
-                  optim: optimizer.Optimizer,
+                  optim: Optional[optimizer.Optimizer],
                   ) -> Tuple[int, int, float]:
         return load_checkpoint(model, optim, str(self.best_checkpoint_path))
 
@@ -114,11 +116,11 @@ class ModelParamStoreSchema:
     def model_path_with_score(self, score: float):
         return self.path.deploy_path("score-" + str(score) + "-checkpoint.tar")
 
-    def save_scripts(self, filenames):
+    def save_scripts(self, filenames: List[Union[Path, str]]):
         for filename in filenames:
-            with open(filename) as source:
-                with open(self.path.scripts_path(filename), "w") as target:
-                    target.writelines(source.readlines())
+            with open(str(filename), "r") as source, open(str(self.path.scripts_path(Path(filename).name).resolve()), "w") as target:
+                print("write", str(filename), "to", str(self.path.scripts_path(Path(filename).name).resolve()))
+                target.writelines(source.readlines())
 
     def save_by_score(self,
                       model: nn.Module,
@@ -132,7 +134,7 @@ class ModelParamStoreSchema:
 
     def load_by_score(self,
                       model: nn.Module,
-                      optim: optimizer.Optimizer,
+                      optim: Optional[optimizer.Optimizer],
                       score: float,
                       ) -> Tuple[int, int, float]:
         return load_checkpoint(model, optim, str(self.checkpoint_path_with_score(score)))

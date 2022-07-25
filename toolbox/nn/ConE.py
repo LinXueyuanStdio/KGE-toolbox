@@ -193,9 +193,9 @@ class ConE(nn.Module):
                     ranking = ranking.scatter_(1, argsort, model.batch_entity_range.to(device))
                 else:
                     if args.cuda:
-                        ranking = ranking.scatter_(1, argsort, torch.arange(model.nentity).to(torch.float).repeat(argsort.shape[0], 1).cuda())
+                        ranking = ranking.scatter_(1, argsort, torch.arange(model.num_entity).to(torch.float).repeat(argsort.shape[0], 1).cuda())
                     else:
-                        ranking = ranking.scatter_(1, argsort, torch.arange(model.nentity).to(torch.float).repeat(argsort.shape[0], 1))
+                        ranking = ranking.scatter_(1, argsort, torch.arange(model.num_entity).to(torch.float).repeat(argsort.shape[0], 1))
 
                 for idx, (i, query, query_structure) in enumerate(zip(argsort[:, 0], queries_unflatten, query_structures)):
                     hard_answer = hard_answers[query]

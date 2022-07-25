@@ -2,9 +2,22 @@ import importlib
 import os
 
 import yaml
+import jinja2
+import easydict
+
 
 from pathlib import Path
 from toolbox.utils.AutoML import config_tuning_space
+
+
+def load_yaml_config(cfg_file, context=None):
+    with open(cfg_file, "r") as fin:
+        raw = fin.read()
+    template = jinja2.Template(raw)
+    instance = template.render(context)
+    cfg = yaml.safe_load(instance)
+    cfg = easydict.EasyDict(cfg)
+    return cfg
 
 
 def load_hyperparameter_yaml(config_file, hyperparams):

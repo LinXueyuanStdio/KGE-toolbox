@@ -24,7 +24,8 @@ from toolbox.data.functional import (
 
 class DatasetCachePath:
     def __init__(self, cache_path: Path):
-        self.cache_path = cache_path
+        cache_path.mkdir(parents=True, exist_ok=True)
+        self.cache_path = cache_path.resolve()
         self.cache_metadata_path = self.cache_path / 'metadata.pkl'
 
     def is_meta_cache_exists(self):
@@ -114,8 +115,8 @@ class BaseData:
         # dump key information
         dump = [
             "",
-            "-" * 15 + "Metadata Info for Dataset: " + self.dataset.name + "-" * (15 - len(self.dataset.name)),
-            "-" * (30 + len("Metadata Info for Dataset: ")),
+            ("Metadata Info for Dataset: " + self.dataset.name).center(50, "-"),
+            "-" * 50,
             "",
         ]
         return dump
@@ -447,13 +448,13 @@ class RelationalTripletData(BaseData):
         # dump key information
         dump = [
             "",
-            "-" * 15 + "Metadata Info for Dataset: " + self.dataset.name + "-" * (15 - len(self.dataset.name)),
+            ("Metadata Info for Dataset: " + self.dataset.name).center(50, "-"),
             "Total Training Triples   :%s" % self.train_triples_count,
             "Total Testing Triples    :%s" % self.test_triples_count,
             "Total validation Triples :%s" % self.valid_triples_count,
             "Total Entities           :%s" % self.entity_count,
             "Total Relations          :%s" % self.relation_count,
-            "-" * (30 + len("Metadata Info for Dataset: ")),
+            "-" * 50,
             "",
         ]
         return dump
@@ -1022,7 +1023,7 @@ class DBP15kData(RelationalTripletData):
     def dump(self) -> List[str]:
         dump = [
             "",
-            "-" * 15 + "Metadata Info for Dataset: " + self.dataset.name + "-" * (15 - len(self.dataset.name)),
+            ("Metadata Info for Dataset: " + self.dataset.name).center(50, "-"),
 
             "Total Entities           :%s" % self.entity_count,
             "Total Relations          :%s" % self.relation_count,
@@ -1056,7 +1057,7 @@ class DBP15kData(RelationalTripletData):
             "relations         :%d" % self.kg2_relations_count,
             "attribute_names   :%d" % self.kg2_attribute_names_count,
             "attribute_values  :%d" % self.kg2_attribute_values_count,
-            "-" * (30 + len("Metadata Info for Dataset: ")),
+            "-" * 50,
             "",
         ]
         return dump
